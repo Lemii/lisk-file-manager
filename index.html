@@ -1,0 +1,95 @@
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Lisktools.eu - Lisk File Manager (TESTNET v1.0.0)</title>
+    <link href="style.css" rel="stylesheet" type="text/css" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700,800" rel="stylesheet">
+    <script type="text/javascript" src="https://js.lisk.io/lisk-elements-1.0.0.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script type="text/javascript" src="js/base91.js"></script>
+    <script type="text/javascript" src="js/liskfilemanager.js"></script>
+</head>
+
+<body>
+    <center>
+        <br>
+        <img src="assets\logo.png">
+        <p class="tiny"><b>TESTNET</b> v1.0.0</p>
+        <p class="tiny" id="unProcessedTransactions">Total unprocessed testnet transactions: </p>
+
+        <div class="row" style="max-width: 1300px;">
+            <div class="column">
+                <h2>Upload File</h2>
+                <hr>
+
+                <h3>Select a file to upload</h3>
+                <label for="myFile" class="myButton">
+                    <i class="fa fa-cloud-upload"></i> Choose a file..
+                </label>
+                <input id="myFile" type="file" onchange="handleFileSelect()">
+                <br>
+                <p>
+                    <div class="tiny" id="fileInfo"></div>
+                    <div class="tiny" id="encodedSize"></div>
+                    <div class="tiny" id="requiredTx"></div>
+                    <div class="tiny" id="requiredLisk"></div>
+                </p>
+
+                <hr>
+
+                <h3>Push to upload file</h3>
+                <input type="button" class="myButton" id="mybutton2" value="Upload" onclick="displayTemporaryAddressData()">
+                <p>
+                    <div class="highlight" id="temporaryUploadData"></div>
+                    <div class="big" id="paymentStatus"></div>
+                    <div class="tiny" id="pendingUploadData"></div>
+                    <div class="tiny" id="broadcastStatus"></div>
+                    <div class="tiny" id="txSuccesNumber"></div>
+                    <div class="tiny" id="txFailureNumber"></div>
+                </p>
+                <hr>
+
+                <h3>File ID</h3>
+
+                <input style="font-size:20px; font-weight: bold; text-align: center;" size="18" id="uniqueUploadIdentifier">
+                <p id="message"></p>
+
+            </div>
+
+            <div class="column">
+
+                <h2>Download File</h2>
+
+                <hr>
+
+                <h3>Enter File ID and press download</h3>
+                <input style="font-size:20px; font-weight: bold; text-align: center;" size="18" id="uniqueDownloadIdentifier">
+                <br><br>
+                <input type="button" class="myButton" id="mybutton3" value="Download" onclick="getFileData()">
+
+            </div>
+
+            <div class="column">
+
+                <h2>Recent Uploads</h2>
+
+                <hr>
+
+                <h3>Last 15 file IDs</h3>
+                <p class="bold" id="latestUploads"></p>
+
+            </div>
+
+        </div>
+        <div style="max-width: 1300px;">
+
+            <hr>
+            <p class="tiny">If you find my tools useful, please consider voting for my delegate <a href="lisk://delegates/vote?votes=lemii">lemii</a> or donating to <a href="lisk://wallet?recipient=5222060513855166167L">5222060513855166167L</a>.</p>
+
+        </div>
+
+    </center>
+</body>
+
+</html>
