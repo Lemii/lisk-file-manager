@@ -1,53 +1,46 @@
 const testnetClient = lisk.APIClient.createTestnetAPIClient();
-const {
-    Mnemonic
-} = lisk.passphrase;
+const { Mnemonic } = lisk.passphrase;
 const temporaryPassphrase = Mnemonic.generateMnemonic();
 const temporaryAddress = lisk.cryptography.getAddressFromPassphrase(temporaryPassphrase);
 
 
-
-
-/* GENERAL FUNCTIONALITY CODE */
+/* GENERAL FUNCTIONALITY */
 
 function getUnProccesedTransactions() {
     testnetClient.node.getStatus()
-        .then(res => {
-            document.getElementById("unProcessedTransactions").innerHTML = "Total unprocessed testnet transactions: " + res.data.transactions.unprocessed
-        })
+    .then(res => {
+        document.getElementById("unProcessedTransactions").innerHTML = "Total unprocessed testnet transactions: " + res.data.transactions.unprocessed
+    })
 }
 
 checkBalanceInterval = setInterval(getUnProccesedTransactions, 5000);
-
 
 const uploadExclusions = ["9911837072540857610"];
 
 function getRecentUploads() {
     testnetClient.transactions.get({
-            recipientId: '607302630603523015L',
-            maxAmount: 1,
-            limit: 15,
-            sort: "timestamp:desc"
-        })
-        .then(res => {
-            for (let i = 0; i < res.data.length; i++) {
-                let uploadId = res.data[i].senderId;
-                console.log(uploadId);
-                if (uploadExclusions.indexOf(uploadId.slice(0, -1)) >= 0) {  
-                    console.log("Skipping: " + uploadId)
-                } else {
-                    document.getElementById("latestUploads").innerHTML += uploadId.slice(0, -1) + "<br>"
-                }
+        recipientId: '607302630603523015L',
+        maxAmount: 1,
+        limit: 15,
+        sort: "timestamp:desc"
+    })
+    .then(res => {
+        for (let i = 0; i < res.data.length; i++) {
+            let uploadId = res.data[i].senderId;
+            console.log(uploadId);
+            if (uploadExclusions.indexOf(uploadId.slice(0, -1)) >= 0) {  
+                console.log("Skipping: " + uploadId)
+            } else {
+                document.getElementById("latestUploads").innerHTML += uploadId.slice(0, -1) + "<br>"
             }
-        })
+        }
+    })
 }
 
 getRecentUploads()
 
 
-
-
-/* UPLOAD FUNCTIONALITY CODE */
+/* UPLOAD FUNCTIONALITY */
 
 function handleFileSelect() {
     const file = document.querySelector('input[type=file]').files[0];
@@ -64,7 +57,6 @@ function handleFileSelect() {
 
 }
 
-
 function encodeBase91(data) {
     console.log(data);
     const base = base91.encode(data);
@@ -75,11 +67,9 @@ function encodeBase91(data) {
 
 }
 
-
 function splitData(txData) {
     var baseObject = txData;
     baseArray = [];
-
     baseArray.push(baseObject.substring(0, 62));
 
     for (var i = 62, charsLength = baseObject.length; i < charsLength; i += 64) {
@@ -88,10 +78,8 @@ function splitData(txData) {
 
     arrayLength = baseArray.length;
     document.getElementById("requiredTx").innerHTML = "Transactions required: <b>" + arrayLength + "</b>";
-
     feeAmount = calculateFees(arrayLength)
 }
-
 
 function calculateFees(txAmount) {
     const liskFee = 0.1;
@@ -106,15 +94,17 @@ function calculateFees(txAmount) {
     return totalFee;
 }
 
-
 function displayTemporaryAddressData() {
-    if (arrayLength > 900) {
+    if (!document.getElementById("fileInfo").innerHTML) {
+        alert("No file selected");
+    } 
+    else if (arrayLength > 900) {
         window.alert("Transactions exceed maximum amount (900)")
-    } else {
+    }
+    else {
         generateTempDataAndCheckBalance()
     }
 }
-
 
 function displayIdentifier() {
     document.getElementById("uniqueUploadIdentifier").value = temporaryAddress.slice(0, -1);
@@ -123,18 +113,10 @@ function displayIdentifier() {
 
 }
 
-
 function generateTempDataAndCheckBalance() {
-
-    userConfirmation = window.confirm(`Please send ${feeAmount.toFixed(8)} LSK to ${temporaryAddress}.\nUpload will initiate shortly after.`)
-
-    if (userConfirmation) {
-        checkBalanceInterval = setInterval(checkBalance, 1000);
-        document.getElementById("temporaryUploadData").innerHTML = `<a class="payment" href="lisk://wallet?recipient=${temporaryAddress}&amount=${feeAmount.toFixed(8)}">Send ${feeAmount.toFixed(8)} LSK to ${temporaryAddress}</a>`;
-        document.getElementById("paymentStatus").innerHTML = `<div class="loader"></div>`
-    } else {
-        document.getElementById("temporaryUploadData").innerHTML = "User aborted upload (refresh is recommended)."
-    }
+    checkBalanceInterval = setInterval(checkBalance, 1000);
+    document.getElementById("temporaryUploadData").innerHTML = `<a class="payment" href="lisk://wallet?recipient=${temporaryAddress}&amount=${feeAmount.toFixed(8)}">Send ${feeAmount.toFixed(8)} LSK to ${temporaryAddress}</a>`;
+    document.getElementById("paymentStatus").innerHTML = `<div class="loader"></div>`
 
     let temporaryBalance = 0;
 
@@ -142,34 +124,32 @@ function generateTempDataAndCheckBalance() {
 
     function checkBalance() {
         testnetClient.accounts.get({
-                address: temporaryAddress
-            })
-            .then(res => {
-                if (res.data.length > 0) {
-                    temporaryBalance = res.data[0].balance / 100000000
-                    document.getElementById("pendingUploadData").innerHTML = `${(feeAmount - temporaryBalance).toFixed(8)} LSK pending`;
+            address: temporaryAddress
+        })
+        .then(res => {
+            if (res.data.length > 0) {
+                temporaryBalance = res.data[0].balance / 100000000
+                document.getElementById("pendingUploadData").innerHTML = `${(feeAmount - temporaryBalance).toFixed(8)} LSK pending`;
 
-                    if (temporaryBalance >= feeAmount.toFixed(8)) {
-                        document.getElementById("paymentStatus").innerHTML = ``;
-                        document.getElementById("temporaryUploadData").innerHTML = ``;
-                        document.getElementById("pendingUploadData").innerHTML = `LSK received <b class="marker">✓</b>`;
-                        stopLoop()
-                    }
-
-                } else {
-                    document.getElementById("pendingUploadData").innerHTML = `${(feeAmount - temporaryBalance).toFixed(8)} LSK pending`;
+                if (temporaryBalance >= feeAmount.toFixed(8)) {
+                    document.getElementById("paymentStatus").innerHTML = ``;
+                    document.getElementById("temporaryUploadData").innerHTML = ``;
+                    document.getElementById("pendingUploadData").innerHTML = `LSK received <b class="marker">✓</b>`;
+                    stopLoop()
                 }
 
-            })
+            } else {
+                document.getElementById("pendingUploadData").innerHTML = `${(feeAmount - temporaryBalance).toFixed(8)} LSK pending`;
+            }
+
+        })
     }
 
     function stopLoop() {
         clearInterval(checkBalanceInterval);
         sendTransactions();
     }
-
 }
-
 
 function sendTransactions() {
     console.log(baseArray);
@@ -188,20 +168,20 @@ function sendTransactions() {
         transactionFailed = 0;
 
         testnetClient.transactions.broadcast(tx)
-            .then(res => {
-                console.log(res.data.message)
-                console.log("Yay!");
-                transactionSucces += 1;
-                document.getElementById("txSuccesNumber").innerHTML = "Transactions accepted: " + transactionSucces;
-                if (transactionSucces == arrayLength) {
-                    document.getElementById("txSuccesNumber").innerHTML = `All ${transactionSucces} transactions accepted <b class="marker">✓</b>`
-                }
+        .then(res => {
+            console.log(res.data.message)
+            console.log("Yay!");
+            transactionSucces += 1;
+            document.getElementById("txSuccesNumber").innerHTML = "Transactions accepted: " + transactionSucces;
+            if (transactionSucces == arrayLength) {
+                document.getElementById("txSuccesNumber").innerHTML = `All ${transactionSucces} transactions accepted <b class="marker">✓</b>`
+            }
 
-            }).catch(res => {
-                console.log("Boo!!");
-                transactionFailed += 1;
-                document.getElementById("txFailureNumber").innerHTML = "Transactions failed: " + transactionFailed;
-            })
+        }).catch(res => {
+            console.log("Boo!!");
+            transactionFailed += 1;
+            document.getElementById("txFailureNumber").innerHTML = "Transactions failed: " + transactionFailed;
+        })
 
         beddowsAmount += 1
 
@@ -212,9 +192,7 @@ function sendTransactions() {
 }
 
 
-
-
-/* DOWNLOAD FUNCTIONALITY BLOCK */
+/* DOWNLOAD FUNCTIONALITY */
 
 function getFileData(input) {
     fileData = [];
@@ -225,26 +203,26 @@ function getFileData(input) {
 
     // Initial API call te determine number of transactions
     testnetClient.transactions.get({
-            recipientId: '607302630603523015L',
-            senderId: userInput,
-        })
-        .then(res => {
-            transactionCount = res.meta.count;
-            offsetAmount = 0
+        recipientId: '607302630603523015L',
+        senderId: userInput,
+    })
+    .then(res => {
+        transactionCount = res.meta.count;
+        offsetAmount = 0
 
-            console.log(`Requesting ${transactionCount} transactions …`);
+        console.log(`Requesting ${transactionCount} transactions …`);
 
-            var done = [];
+        var done = [];
 
             // Loop through result pages
             while (offsetAmount < transactionCount) {
                 done.push(testnetClient.transactions.get({
-                        offset: offsetAmount,
-                        limit: 100,
-                        recipientId: '607302630603523015L',
-                        senderId: userInput
-                    })
-                    .then(res => {
+                    offset: offsetAmount,
+                    limit: 100,
+                    recipientId: '607302630603523015L',
+                    senderId: userInput
+                })
+                .then(res => {
                         // Retrieve data from all results on the page
                         for (var i = 0; i < res.data.length; i++) {
                             fullData = res.data[i].asset.data;
@@ -264,9 +242,7 @@ function getFileData(input) {
         });
 }
 
-
 function stitchData() {
-
     fileDataStitched = "";
     console.log(fileDataStitched);
     fileDataSorted = fileData.sort()
@@ -294,9 +270,9 @@ function stitchData() {
         a.style = "display: none";
         return function(data, name) {
             var blob = new Blob(data, {
-                    type: "octet/stream"
-                }),
-                url = window.URL.createObjectURL(blob);
+                type: "octet/stream"
+            }),
+            url = window.URL.createObjectURL(blob);
             a.href = url;
             a.download = name;
             a.click();
@@ -307,7 +283,6 @@ function stitchData() {
     saveByteArray([rawData], "download." + fileDataStitchedSplitted[0]);
 
 }
-
 
 function decodeBase91(data) {
     console.log(data);
